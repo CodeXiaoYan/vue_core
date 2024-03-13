@@ -677,10 +677,13 @@ export function applyOptions(instance: ComponentInternalInstance) {
   if (injectOptions) {
     resolveInjections(injectOptions, ctx, checkDuplicateProperties)
   }
-
+  // 判断是否写了methods
   if (methods) {
+    //遍历methods
     for (const key in methods) {
+      // 获取methods中的属性值也就是说我们在组件中定义的方法
       const methodHandler = (methods as MethodOptions)[key]
+      // 判断methods中的属性是否是函数
       if (isFunction(methodHandler)) {
         // In dev mode, we use the `createRenderContext` function to define
         // methods to the proxy target, and those are read-only but
@@ -693,6 +696,7 @@ export function applyOptions(instance: ComponentInternalInstance) {
             writable: true
           })
         } else {
+          // 改变this指向组件中定义的data
           ctx[key] = methodHandler.bind(publicThis)
         }
         if (__DEV__) {

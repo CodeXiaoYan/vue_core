@@ -218,12 +218,12 @@ export interface SimpleExpressionNode extends Node {
    * Indicates this is an identifier for a hoist vnode call and points to the
    * hoisted node.
    */
-  hoisted?: JSChildNode
+  hoisted?: JSChildNode //?: 代表可选属性
   /**
    * an expression parsed as the params of a function will track
    * the identifiers declared inside the function body.
    */
-  identifiers?: string[]
+  identifiers?: string[] //string[] 代表字符串数组
   isHandlerKey?: boolean
 }
 

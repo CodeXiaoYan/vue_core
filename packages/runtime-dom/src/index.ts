@@ -37,8 +37,10 @@ const rendererOptions = /*#__PURE__*/ extend({ patchProp }, nodeOps)
 let renderer: Renderer<Element | ShadowRoot> | HydrationRenderer
 
 let enabledHydration = false
-
+// 创建渲染器
 function ensureRenderer() {
+  // renderer有值，直接返回
+  // 没有渲染器时候createRenderer创建渲染器
   return (
     renderer ||
     (renderer = createRenderer<Node, Element | ShadowRoot>(rendererOptions))
@@ -71,6 +73,7 @@ export const createApp = ((...args) => {
   }
 
   const { mount } = app
+  // 重写mount方法
   app.mount = (containerOrSelector: Element | ShadowRoot | string): any => {
     const container = normalizeContainer(containerOrSelector)
     if (!container) return

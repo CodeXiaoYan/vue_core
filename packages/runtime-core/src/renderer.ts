@@ -294,6 +294,7 @@ export const queuePostRenderEffect = __FEATURE_SUSPENSE__
  * })
  * ```
  */
+// 创建渲染器
 export function createRenderer<
   HostNode = RendererNode,
   HostElement = RendererElement
@@ -322,7 +323,7 @@ function baseCreateRenderer(
   createHydrationFns: typeof createHydrationFunctions
 ): HydrationRenderer
 
-// implementation
+// implementation  重载
 function baseCreateRenderer(
   options: RendererOptions,
   createHydrationFns?: typeof createHydrationFunctions
@@ -355,9 +356,10 @@ function baseCreateRenderer(
 
   // Note: functions inside this closure should use `const xxx = () => {}`
   // style in order to prevent being inlined by minifiers.
+  // 进行挂载dom
   const patch: PatchFn = (
-    n1,
-    n2,
+    n1, //代表旧的vnode
+    n2, //代表新的vnode
     container,
     anchor = null,
     parentComponent = null,
@@ -383,14 +385,18 @@ function baseCreateRenderer(
     }
 
     const { type, ref, shapeFlag } = n2
+    // 判断类型
     switch (type) {
       case Text:
+        // 处理文本节点
         processText(n1, n2, container, anchor)
         break
       case Comment:
+        // 处理注释节点
         processCommentNode(n1, n2, container, anchor)
         break
       case Static:
+        // 处理静态节点
         if (n1 == null) {
           mountStaticNode(n2, container, anchor, isSVG)
         } else if (__DEV__) {
@@ -398,6 +404,7 @@ function baseCreateRenderer(
         }
         break
       case Fragment:
+        // 处理片段节点
         processFragment(
           n1,
           n2,
@@ -411,7 +418,9 @@ function baseCreateRenderer(
         )
         break
       default:
+        // 默认处理元素节点
         if (shapeFlag & ShapeFlags.ELEMENT) {
+          // 处理元素节点
           processElement(
             n1,
             n2,
@@ -424,6 +433,7 @@ function baseCreateRenderer(
             optimized
           )
         } else if (shapeFlag & ShapeFlags.COMPONENT) {
+          // 处理组件节点 列如：
           processComponent(
             n1,
             n2,
@@ -609,7 +619,7 @@ function baseCreateRenderer(
       )
     }
   }
-
+  // 挂载元素
   const mountElement = (
     vnode: VNode,
     container: RendererElement,
@@ -623,7 +633,7 @@ function baseCreateRenderer(
     let el: RendererElement
     let vnodeHook: VNodeHook | undefined | null
     const { type, props, shapeFlag, transition, dirs } = vnode
-
+    // el 为真实dom
     el = vnode.el = hostCreateElement(
       vnode.type as string,
       isSVG,
@@ -634,8 +644,10 @@ function baseCreateRenderer(
     // mount children first, since some props may rely on child content
     // being already rendered, e.g. `<select value>`
     if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
+      // 处理文本子节点
       hostSetElementText(el, vnode.children as string)
     } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+      // 处理数组子节点
       mountChildren(
         vnode.children as VNodeArrayChildren,
         el,
@@ -838,7 +850,7 @@ function baseCreateRenderer(
         traverseStaticChildren(n1, n2)
       }
     } else if (!optimized) {
-      // full diff
+      // full diff  全量更新
       patchChildren(
         n1,
         n2,
@@ -1155,6 +1167,7 @@ function baseCreateRenderer(
   ) => {
     n2.slotScopeIds = slotScopeIds
     if (n1 == null) {
+      // 初始化组件
       if (n2.shapeFlag & ShapeFlags.COMPONENT_KEPT_ALIVE) {
         ;(parentComponent!.ctx as KeepAliveContext).activate(
           n2,
@@ -1164,6 +1177,7 @@ function baseCreateRenderer(
           optimized
         )
       } else {
+        // 创建组件实例
         mountComponent(
           n2,
           container,
@@ -1175,10 +1189,11 @@ function baseCreateRenderer(
         )
       }
     } else {
+      // 更新组件
       updateComponent(n1, n2, optimized)
     }
   }
-
+  // 组件挂载操作
   const mountComponent: MountComponentFn = (
     initialVNode,
     container,
@@ -1190,8 +1205,12 @@ function baseCreateRenderer(
   ) => {
     // 2.x compat may pre-create the component instance before actually
     // mounting
+
     const compatMountInstance =
       __COMPAT__ && initialVNode.isCompatRoot && initialVNode.component
+    // 创建了组件实例
+
+    // Vnode是一个虚拟的节点，instance组件实例是一个真实的对象 保存组件的状态
     const instance: ComponentInternalInstance =
       compatMountInstance ||
       (initialVNode.component = createComponentInstance(
@@ -1219,6 +1238,7 @@ function baseCreateRenderer(
       if (__DEV__) {
         startMeasure(instance, `init`)
       }
+      // 初始化组件 instance
       setupComponent(instance)
       if (__DEV__) {
         endMeasure(instance, `init`)
@@ -1238,7 +1258,7 @@ function baseCreateRenderer(
       }
       return
     }
-
+    //Effect副作用函数
     setupRenderEffect(
       instance,
       initialVNode,
@@ -1431,6 +1451,7 @@ function baseCreateRenderer(
             )
           }
         }
+        // 初始化完成
         instance.isMounted = true
 
         if (__DEV__ || __FEATURE_PROD_DEVTOOLS__) {
@@ -1542,9 +1563,11 @@ function baseCreateRenderer(
     }
 
     // create reactive effect for rendering
+    // reactive响应式数据
     const effect = (instance.effect = new ReactiveEffect(
       componentUpdateFn,
       () => queueJob(update),
+      // 数据变化后是否立即执行effect 默认是true
       instance.scope // track it in component's effect scope
     ))
 
@@ -1604,6 +1627,7 @@ function baseCreateRenderer(
     const { patchFlag, shapeFlag } = n2
     // fast path
     if (patchFlag > 0) {
+      // 第一次渲染
       if (patchFlag & PatchFlags.KEYED_FRAGMENT) {
         // this could be either fully-keyed or mixed (some keyed some not)
         // presence of patchFlag means children are guaranteed to be arrays
@@ -1620,6 +1644,7 @@ function baseCreateRenderer(
         )
         return
       } else if (patchFlag & PatchFlags.UNKEYED_FRAGMENT) {
+        // 更新渲染
         // unkeyed
         patchUnkeyedChildren(
           c1 as VNode[],
@@ -1687,7 +1712,7 @@ function baseCreateRenderer(
       }
     }
   }
-
+  // diff
   const patchUnkeyedChildren = (
     c1: VNode[],
     c2: VNodeArrayChildren,
@@ -1697,13 +1722,15 @@ function baseCreateRenderer(
     parentSuspense: SuspenseBoundary | null,
     isSVG: boolean,
     slotScopeIds: string[] | null,
-    optimized: boolean
+    optimized: boolean // 是否优化
   ) => {
-    c1 = c1 || EMPTY_ARR
-    c2 = c2 || EMPTY_ARR
-    const oldLength = c1.length
-    const newLength = c2.length
-    const commonLength = Math.min(oldLength, newLength)
+    // EMPTY_ARR 空数组
+    c1 = c1 || EMPTY_ARR // 旧的节点
+    c2 = c2 || EMPTY_ARR // 新的节点
+    const oldLength = c1.length // 旧的长度
+    const newLength = c2.length // 新的长度
+    // 最终的diff算法
+    const commonLength = Math.min(oldLength, newLength) // 取最小的长度
     let i
     for (i = 0; i < commonLength; i++) {
       const nextChild = (c2[i] = optimized
@@ -2316,11 +2343,13 @@ function baseCreateRenderer(
   }
 
   const render: RootRenderFunction = (vnode, container, isSVG) => {
+    // 如果vnode为空，且container不为空，且container有子节点，那么就清空container
     if (vnode == null) {
       if (container._vnode) {
         unmount(container._vnode, null, null, true)
       }
     } else {
+      // 如果vnode不为空，且container为空，那么就创建一个空的注释节点
       patch(container._vnode || null, vnode, container, null, null, null, isSVG)
     }
     flushPreFlushCbs()
@@ -2348,11 +2377,11 @@ function baseCreateRenderer(
       internals as RendererInternals<Node, Element>
     )
   }
-
+  // 渲染器最终返回的对象
   return {
     render,
     hydrate,
-    createApp: createAppAPI(render, hydrate)
+    createApp: createAppAPI(render, hydrate) //createAppAPI返回的是createApp
   }
 }
 

@@ -90,6 +90,7 @@ export function isRef(r: any): r is Ref {
 export function ref<T extends Ref>(value: T): T
 export function ref<T>(value: T): Ref<UnwrapRef<T>>
 export function ref<T = any>(): Ref<T | undefined>
+// 创建ref
 export function ref(value?: unknown) {
   return createRef(value, false)
 }
@@ -121,13 +122,14 @@ export function shallowRef<T extends object>(
 export function shallowRef<T>(value: T): ShallowRef<T>
 export function shallowRef<T = any>(): ShallowRef<T | undefined>
 export function shallowRef(value?: unknown) {
-  return createRef(value, true)
+  return createRef(value, false)
 }
 
 function createRef(rawValue: unknown, shallow: boolean) {
   if (isRef(rawValue)) {
     return rawValue
   }
+  // shallow 这是一个标记，用来标记是否是浅层的响应式对象
   return new RefImpl(rawValue, shallow)
 }
 

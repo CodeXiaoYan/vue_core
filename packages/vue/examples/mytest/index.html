@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="app">
+        <div class="about">
+            <div class="scrollView">
+                <div class="list">
+                    <div class="item" v-for="item in list" :key="item">
+                        {{ item }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="../../dist/vue.global.js">
+
+</script>
+<script>
+    const arr = [1, 7, 8, 9, 54, 4, 6];
+    const newArr = [1, 65, 0, 2]
+    function patch() {
+
+    }
+    function diff(n1, n2) {
+        const length = Math.min(n1.length, n2.length); // 两个数组中最小的长度
+        for (let i = 0; i < length; i++) {
+            if (n1[i] !== n2[i]) {
+                console.log('不相等')
+                // 进行diff
+                patch()
+            }
+            if (n1.length > n2.length) {
+                console.log('n1比n2长')
+            }
+            if (n1.length < n2.length) {
+                console.log('n1比n2短')
+            }
+        }
+    }
+
+    diff(arr, newArr);
+
+
+    Vue.createApp({
+        data() {
+            return {
+                list: [],
+            };
+        },
+        mounted() {
+            const total = 100000;
+            const list = [];
+            for (let i = 0; i < total; i++) {
+                list.push(i);
+            }
+            this.list = list;
+            this.list = list.slice(0, 6);
+        }
+    }).mount('#app')
+
+</script>
+<script>
+
+</script>
+
+</html>
+<style>
+    .scrollView {
+        width: 200px;
+        height: 300px;
+        background-color: red;
+        overflow-y: scroll;
+        position: relative;
+    }
+
+    .item {
+        height: 50px;
+    }
+</style>

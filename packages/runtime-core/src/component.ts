@@ -900,10 +900,12 @@ export function finishComponentSetup(
   }
 
   // support for 2.x options
+  // 为了兼容vue2 的options
   if (__FEATURE_OPTIONS_API__ && !(__COMPAT__ && skipOptions)) {
     setCurrentInstance(instance)
     pauseTracking()
     try {
+      // propsOptions
       applyOptions(instance)
     } finally {
       resetTracking()

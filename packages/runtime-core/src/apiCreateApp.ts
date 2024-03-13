@@ -195,7 +195,7 @@ export type CreateAppFunction<HostElement> = (
 ) => App<HostElement>
 
 let uid = 0
-
+// 最终调用的是这个函数
 export function createAppAPI<HostElement>(
   render: RootRenderFunction<HostElement>,
   hydrate?: RootHydrateFunction
@@ -315,11 +315,11 @@ export function createAppAPI<HostElement>(
         context.directives[name] = directive
         return app
       },
-
+      // 核心挂载函数
       mount(
-        rootContainer: HostElement,
-        isHydrate?: boolean,
-        isSVG?: boolean
+        rootContainer: HostElement, // 挂载的dom节点
+        isHydrate?: boolean, //
+        isSVG?: boolean // 是否是svg
       ): any {
         if (!isMounted) {
           // #5571

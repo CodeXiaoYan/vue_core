@@ -82,15 +82,17 @@ export type UnwrapNestedRefs<T> = T extends Ref ? T : UnwrapRefSimple<T>
 export function reactive<T extends object>(target: T): UnwrapNestedRefs<T>
 export function reactive(target: object) {
   // if trying to observe a readonly proxy, return the readonly version.
+  // 如果是只读的prxy，直接返回 target
   if (isReadonly(target)) {
     return target
   }
+  // 创建一个响应式对象
   return createReactiveObject(
-    target,
-    false,
-    mutableHandlers,
-    mutableCollectionHandlers,
-    reactiveMap
+    target, // 原始对象
+    false, // 是否只读
+    mutableHandlers, // 响应式对象的处理器
+    mutableCollectionHandlers, // 响应式对象的集合处理器
+    reactiveMap // 响应式对象的缓存
   )
 }
 
@@ -246,10 +248,10 @@ export function shallowReadonly<T extends object>(target: T): Readonly<T> {
 }
 
 function createReactiveObject(
-  target: Target,
-  isReadonly: boolean,
-  baseHandlers: ProxyHandler<any>,
-  collectionHandlers: ProxyHandler<any>,
+  target: Target, // 原始对象
+  isReadonly: boolean, // 是否只读
+  baseHandlers: ProxyHandler<any>, // 响应式对象的处理器
+  collectionHandlers: ProxyHandler<any>, // 响应式对象的集合处理器
   proxyMap: WeakMap<Target, any>
 ) {
   if (!isObject(target)) {
